@@ -10,6 +10,7 @@ import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.clcoulte.gsort.Util.ProgressTracker;
@@ -23,7 +24,7 @@ public class GMailRunner {
 
 	private static final String TAG = "GMailRunner";
 
-	private static final String DEFAULT_LOGIN_UN = "clcoulte@gmail.com",
+	public static final String DEFAULT_LOGIN_UN = "clcoulte@gmail.com",
 			DEFAULT_LOGIN_PW = "pzrsekoeyorxzlaz";
 
 	private ProgressTracker progressTracker;
@@ -60,20 +61,47 @@ public class GMailRunner {
 				return new PasswordAuthentication(un, pw);
 			}
 		});
-		Store store;
+
+		Store store = null;
 
 		try {
 			store = session.getStore();
-			store.connect();
-
 		} catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
 			Log.v(TAG, e.getMessage());
-		} catch (MessagingException e) {
-			// TODO Auto-generated catch block
-			// e.printStackTrace();
-			Log.v(TAG, e.getMessage());
+		}
+
+		new ConnectTask().execute(store);
+
+	}
+
+	private class ConnectTask extends AsyncTask<Store, Void, Exception> {
+
+		// Class currently only takes one parameter**
+
+		protected void onPreExecute() {
+		}
+
+		protected Exception doInBackground(Store... stores) {
+			try {
+				stores[0].connect();
+				// Log.v(TAG, "isConnected() - " + stores[0].isConnected()
+				// + " to " + stores[0].getURLName().toString());
+				return null;
+			} catch (Exception e) {
+				// MessagingException
+				Log.v(TAG, e.getMessage());
+				return e;
+			}
+		}
+
+		protected void onProgressUpdate() {
+
+		}
+
+		protected void onPostExecute(Exception e) {
+			if (e == null) {
+				Log.v(TAG, "CONNECTED!");
+			}
 		}
 
 	}
