@@ -13,7 +13,9 @@ import javax.mail.Store;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.clcoulte.gsort.Util.Address;
 import com.clcoulte.gsort.Util.ProgressTracker;
+import com.clcoulte.gsort.Util.TreeNode;
 
 /*
  * GMailRunner
@@ -22,10 +24,14 @@ import com.clcoulte.gsort.Util.ProgressTracker;
  */
 public class GMailRunner {
 
+	public Store store = null;
+
 	private static final String TAG = "GMailRunner";
 
 	public static final String DEFAULT_LOGIN_UN = "clcoulte@gmail.com",
 			DEFAULT_LOGIN_PW = "pzrsekoeyorxzlaz";
+
+	private static final String DEF_FOLDER = "All Mail";
 
 	private ProgressTracker progressTracker;
 
@@ -61,8 +67,6 @@ public class GMailRunner {
 				return new PasswordAuthentication(un, pw);
 			}
 		});
-
-		Store store = null;
 
 		try {
 			store = session.getStore();
@@ -104,6 +108,38 @@ public class GMailRunner {
 			}
 		}
 
+	}
+
+	public TreeNode getAllMailTree() {
+		TreeNode root = new TreeNode<String>();
+
+		if (!store.isConnected()) {
+			Log.v(TAG, "getAllMailTree() - store not connected");
+			return null;
+		}
+
+		Folder f;
+		try {
+			f = store.getFolder(DEF_FOLDER);
+		} catch (MessagingException e1) {
+			Log.v(TAG,
+					"Can't find folder - " + DEF_FOLDER + " - "
+							+ e1.getMessage());
+			return null;
+		}
+
+		try {
+			f.open(Folder.READ_ONLY);
+		} catch (MessagingException e) {
+			Log.v(TAG,
+					"Can't open folder - " + f.getFullName() + " - "
+							+ e.getMessage());
+			return null;
+		}
+		
+		
+
+		return root;
 	}
 
 	public ProgressTracker getProgressTracker() {

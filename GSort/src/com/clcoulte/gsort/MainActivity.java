@@ -1,5 +1,6 @@
 package com.clcoulte.gsort;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.clcoulte.gsort.MailUtil.GMailRunner;
@@ -9,11 +10,18 @@ import android.support.v7.app.ActionBarActivity;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -30,11 +38,32 @@ public class MainActivity extends ActionBarActivity {
 		Log.d(TAG, "onCreate()");
 
 		mainListView = (ListView) findViewById(R.id.mainListView);
+		mainListView.setOnItemClickListener(new OnItemClickListener() {
 
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				Toast.makeText(
+						parent.getContext(),
+						((AddressListAdapter) parent.getAdapter()).addresses
+								.get(position).getBaseDomain()
+								+ " - "
+								+ position, Toast.LENGTH_LONG).show();
+
+				ArrayList<Address> addresses = new ArrayList<Address>();
+				addresses.add(new Address("asdf@asdf.fdsf.csdc", 5));
+				addresses.add(new Address("test@com.clcoulte.div", 6));
+
+				mainListView.setAdapter(new AddressListAdapter(parent
+						.getContext(), addresses));
+			}
+
+		});
 		ArrayList<Address> addresses = new ArrayList<Address>();
-		
-		
-		mainListView.setAdapter(new AddressListAdapter(this, android.R.layout.simple_list_item_1, addresses		));
+		addresses.add(new Address());
+		addresses.add(new Address());
+
+		mainListView.setAdapter(new AddressListAdapter(this, addresses));
 
 		// Connects to GMail on instantiate
 		runner = new GMailRunner();
@@ -62,10 +91,31 @@ public class MainActivity extends ActionBarActivity {
 
 	private class AddressListAdapter extends ArrayAdapter<Address> {
 
-		public AddressListAdapter(Context context) {
-			super(context, resource, textViewResourceId, objects);
-			// TODO Auto-generated constructor stub
+		private final Context context;
+		private final ArrayList<Address> addresses;
+
+		public AddressListAdapter(Context context, ArrayList<Address> addresses) {
+			super(context, R.id.listDataModel, addresses);
+			this.context = context;
+			this.addresses = addresses;
 		}
 
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View rowView = convertView;
+			if (rowView == null) {
+				LayoutInflater inflater = (LayoutInflater) context
+						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				rowView = inflater.inflate(R.layout.listdatamodel, parent,
+						false);
+			}
+			TextView nameTextView = (TextView) rowView
+					.findViewById(R.id.nameTextView);
+			TextView countTextView = (TextView) rowView
+					.findViewById(R.id.countTextView);
+			nameTextView.setText(addresses.get(position).getBaseDomain());
+			countTextView.setText("" + addresses.get(position).getCount());
+			return rowView;
+		}
 	}
 }
